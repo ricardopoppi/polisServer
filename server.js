@@ -6053,7 +6053,6 @@ Email verified! You can close this tab or hit the back button.
         return getSocialInforForUsers(uids).then(function(socialInfos) {
           let uidToSocialInfo = {};
           socialInfos.forEach(function(info) {
-            info.uid = info.coalesced_uid;
             // whitelist properties to send
             let infoToReturn = _.pick(info, [
               // fb
@@ -9369,6 +9368,7 @@ Email verified! You can close this tab or hit the back button.
   // }
 
   function getSocialInforForUsers(uids) {
+    uids = _.uniq(uids);
     uids.forEach(function(uid) {
       if (!_.isNumber(uid)) {
         throw "polis_err_123123_invalid_uid got:" + uid;
@@ -9378,7 +9378,7 @@ Email verified! You can close this tab or hit the back button.
       return Promise.resolve([]);
     }
     let uidString = uids.join(",");
-    return pgQueryP_metered_readOnly("getSocialInforForUsers", "with fb as (select * from facebook_users where uid in (" + uidString + ")), tw as (select * from twitter_users where uid in (" + uidString + ")) select * from fb full outer join tw on tw.uid = fb.uid;", []);
+    return pgQueryP_metered_readOnly("getSocialInforForUsers", "with fb as (select * from facebook_users where uid in (" + uidString + ")), tw as (select * from twitter_users where uid in (" + uidString + ")) select *, coalesce(fb.uid, tw.uid) as uid from fb full outer join tw on tw.uid = fb.uid;", []);
   }
 
   function updateVoteCount(zid, pid) {
