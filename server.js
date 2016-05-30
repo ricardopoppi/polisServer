@@ -8051,9 +8051,6 @@ Email verified! You can close this tab or hit the back button.
     }
   }
 
-  function handle_POST_metadata_new(req, res) {}
-
-
 
   function getConversationHasMetadata(zid) {
     return new Promise(function(resolve, reject) {
@@ -10054,21 +10051,21 @@ Email verified! You can close this tab or hit the back button.
     });
   }
 
-  function handle_GET_cache_purge(req, res) {
+  // function handle_GET_cache_purge(req, res) {
 
-    let hostname = "pol.is";
-    // NOTE: can't purge preprod independently unless we set up a separate domain on cloudflare, AFAIK
+  //   let hostname = "pol.is";
+  //   // NOTE: can't purge preprod independently unless we set up a separate domain on cloudflare, AFAIK
 
-    request.post("https://www.cloudflare.com/api_json.html").form({
-      a: 'fpurge_ts',
-      tkn: process.env.CLOUDFLARE_API_KEY,
-      email: process.env.CLOUDFLARE_API_EMAIL,
-      z: hostname,
-      v: 1,
-    })
-    .pipe(res);
+  //   request.post("https://www.cloudflare.com/api_json.html").form({
+  //     a: 'fpurge_ts',
+  //     tkn: process.env.CLOUDFLARE_API_KEY,
+  //     email: process.env.CLOUDFLARE_API_EMAIL,
+  //     z: hostname,
+  //     v: 1,
+  //   })
+  //   .pipe(res);
 
-  }
+  // }
 
 
   function handle_GET_einvites(req, res) {
@@ -11674,7 +11671,6 @@ Email verified! You can close this tab or hit the back button.
     handle_DELETE_metadata_questions,
     handle_GET_bid,
     handle_GET_bidToPid,
-    handle_GET_cache_purge,
     handle_GET_canvas_app_instructions_png,
     handle_GET_comments,
     handle_GET_conditionalIndexFetcher,
@@ -11743,7 +11739,6 @@ Email verified! You can close this tab or hit the back button.
     handle_POST_lti_conversation_assignment,
     handle_POST_lti_setup_assignment,
     handle_POST_metadata_answers,
-    handle_POST_metadata_new,
     handle_POST_metadata_questions,
     handle_POST_participants,
     handle_POST_ptptCommentMod,
