@@ -4140,7 +4140,7 @@ Email verified! You can close this tab or hit the back button.
     q += "  (SELECT zid,  ";
     q += "          COALESCE(COUNT(*), 0) AS total ";
     q += "   FROM comments  ";
-    q += "   WHERE MOD >= 0 ";
+    q += "   WHERE MOD >= 0 AND ACTIVE = TRUE";
     q += "   GROUP BY zid),  ";
     q += "  participant_vote_counts AS (SELECT voted.zid,  ";
     q += "          voted.pid,  ";
@@ -4149,7 +4149,7 @@ Email verified! You can close this tab or hit the back button.
     q += "     (SELECT comments.zid,  ";
     q += "             comments.tid ";
     q += "      FROM comments  ";
-    q += "      WHERE MOD >= 0) AS needed ";
+    q += "      WHERE MOD >= 0 AND ACTIVE = TRUE) AS needed ";
     q += "   LEFT JOIN  ";
     q += "     (SELECT zid,  ";
     q += "             tid,  ";
