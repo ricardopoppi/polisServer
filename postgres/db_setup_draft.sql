@@ -96,6 +96,7 @@ CREATE TABLE metrics (
     uid INTEGER REFERENCES users(uid),
     type INTEGER NOT NULL,
     dur INTEGER,
+    hashedPc INTEGER,
     created BIGINT DEFAULT now_as_millis()
 );
 
