@@ -1309,7 +1309,7 @@ function initializePolisHelpers(mongoParams) {
   //         async.series(
   //             missing.map(function(c) {
   //                 return function(callback) {
-  //                     votesPost(c.pid, c.zid, c.tid, 0)
+  //                     votesPost(uid, c.pid, c.zid, c.tid, 0)
   //                         .then(function() {
   //                             winston.log("info","ok " + c.txt);
   //                             callback(null);
@@ -1580,12 +1580,12 @@ function initializePolisHelpers(mongoParams) {
   }
 
 
-  function doVotesPost(pid, conv, tid, voteType, weight, shouldNotify) {
+  function doVotesPost(uid, pid, conv, tid, voteType, weight, shouldNotify) {
     let zid = conv.zid;
     weight = weight || 0;
     let weight_x_32767 = Math.trunc(weight * 32767); // weight is stored as a SMALLINT, so convert from a [-1,1] float to [-32767,32767] int
     return new Promise(function(resolve, reject) {
-      let query = "INSERT INTO votes (pid, zid, tid, vote, weight_x_32767, created) VALUES ($1, $2, $3, $4, $5, default) RETURNING created;";
+      let query = "INSERT INTO votes (pid, zid, tid, vote, weight_x_32767, created) VALUES ($1, $2, $3, $4, $5, default) RETURNING *;";
       let params = [pid, zid, tid, voteType, weight_x_32767];
       pgQuery(query, params, function(err, result) {
         if (err) {
@@ -1598,22 +1598,26 @@ function initializePolisHelpers(mongoParams) {
           return;
         }
 
+        const vote = result.rows[0];
+
         if (shouldNotify && conv && conv.is_slack) {
           sendSlackEvent({
             type: "vote",
-            vote: vote,
+            data: Object.assign({
+              uid: uid,
+            }, vote),
           });
         }
 
         resolve({
           conv: conv,
-          vote: result.rows[0],
+          vote: vote,
         });
       });
     });
   }
 
-  function votesPost(pid, zid, tid, voteType, weight, shouldNotify) {
+  function votesPost(uid, pid, zid, tid, voteType, weight, shouldNotify) {
     return pgQueryP_readOnly("select * from conversations where zid = ($1);", [zid]).then(function(rows) {
       if (!rows || !rows.length) {
         throw "polis_err_unknown_conversation";
@@ -1624,7 +1628,7 @@ function initializePolisHelpers(mongoParams) {
       }
       return conv;
     }).then(function(conv) {
-      return doVotesPost(pid, conv, tid, voteType, weight, shouldNotify);
+      return doVotesPost(uid, pid, conv, tid, voteType, weight, shouldNotify);
     });
   }
 
@@ -1767,7 +1771,7 @@ function initializePolisHelpers(mongoParams) {
 
       if (xPolisToken && isPolisLtiToken(xPolisToken)) {
         doPolisLtiTokenHeaderAuth(assigner, isOptional, req, res, next);
-      } else if (xPolisToken && xPolisSlackTeamUserToken(xPolisToken)) {
+      } else if (xPolisToken && isPolisSlackTeamUserToken(xPolisToken)) {
         doPolisSlackTeamUserTokenHeaderAuth(assigner, isOptional, req, res, next);
       } else if (xPolisToken) {
         doHeaderAuth(assigner, isOptional, req, res, next);
@@ -6721,7 +6725,7 @@ Email verified! You can close this tab or hit the back button.
               docs = docs.rows;
               let comment = docs && docs[0];
               let tid = comment && comment.tid;
-              let createdTime = comment && comment.created;
+              // let createdTime = comment && comment.created;
 
               if (bad || spammy || conv.strict_moderation) {
                 getNumberOfCommentsWithModerationStatus(zid, polisTypes.mod.unmoderated).catch(function(err) {
@@ -6742,22 +6746,22 @@ Email verified! You can close this tab or hit the back button.
                     uids.forEach(function(uid) {
                       sendCommentModerationEmail(req, uid, zid, n);
                       sendSlackEvent({
-                        comment: comment,
                         type: "comment_mod_needed",
+                        data: comment,
                       });
                     });
                   });
                 });
               } else {
-                sendCommentModerationEmail(req, 125, zid, "?"); // email mike for all comments, since some people may not have turned on strict moderation, and we may want to babysit evaluation conversations of important customers.
+                sendCommentModerationEmail(req, 125, zid, "?"); // email mike for all comments, since some people may not have turned on strict moderation, and we may want to babysit evaluation conversations of important customers.              
                 sendSlackEvent({
                   type: "comment_mod_needed",
-                  comment: comment,
+                  data: comment,
                 });
               }
 
-              votesPost(pid, zid, tid, vote, 0, false).then(function(o) {
-                let conv = o.conv;
+              votesPost(uid, pid, zid, tid, vote, 0, false).then(function(o) {
+                // let conv = o.conv;
                 let vote = o.vote;
                 let createdTime = vote.created;
 
@@ -6820,7 +6824,7 @@ Email verified! You can close this tab or hit the back button.
     //tid: tid,
     //pid: pid
     //};
-    ////votesPost(pid, zid, tid, [autoPull]);
+    ////votesPost(uid, pid, zid, tid, [autoPull]);
     //}); // COMMIT
     //}); // INSERT
     //}); // SET CONSTRAINTS
@@ -7148,13 +7152,13 @@ Email verified! You can close this tab or hit the back button.
 
     pidReadyPromise.then(function() {
 
-      let conv;
+      // let conv;
       let vote;
 
       pidReadyPromise.then(function() {
-        return votesPost(pid, req.p.zid, req.p.tid, req.p.vote, req.p.weight, true);
+        return votesPost(uid, pid, req.p.zid, req.p.tid, req.p.vote, req.p.weight, true);
       }).then(function(o) {
-        conv = o.conv;
+        // conv = o.conv;
         vote = o.vote;
         let createdTime = vote.created;
         setTimeout(function() {
@@ -7564,7 +7568,7 @@ Email verified! You can close this tab or hit the back button.
         if (conv.is_slack) {
           sendSlackEvent({
             type: "closed",
-            conversation: conv,
+            data: conv,
           });
         }
 
@@ -7601,7 +7605,7 @@ Email verified! You can close this tab or hit the back button.
         if (conv.is_slack) {
           sendSlackEvent({
             type: "reopened",
-            conversation: conv,
+            data: conv,
           });
         }
         res.status(200).json({});
