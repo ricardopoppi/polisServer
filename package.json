@@ -4,7 +4,9 @@
   "description": "polis =====",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "engines": {
     "node": "6.2.0",
@@ -51,9 +53,11 @@
     "sql": "0.34.0",
     "underscore": "1.5.2",
     "valid-url": "1.0.9",
-    "winston": "1.0.2"
+    "winston": "1.0.2",
+    "snyk": "^1.17.1"
   },
   "optionalDependencies": {
     "polisServerBrand": "git+https://github.com/colinmegill/polisServerBrand.git#master"
-  }
+  },
+  "snyk": true
 }
