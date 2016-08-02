@@ -64,6 +64,8 @@ function connectToMongo(callback) {
   });
 }
 
+console.log('init 1');
+
 var helpersInitialized = new Promise(function(resolve, reject) {
   connectToMongo(function(err, args) {
     console.log('connectToMongo callback', err, args);
