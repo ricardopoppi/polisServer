@@ -12143,6 +12143,8 @@ CREATE TABLE slack_user_invites (
     }
   }
 
+  console.log('end initializePolisHelpers');
+
   return {
     addCorsHeader,
     assignToP,
