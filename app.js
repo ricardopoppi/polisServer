@@ -134,7 +134,6 @@ helpersInitialized.then(function(o) {
     middleware_log_request_body,
     middleware_log_middleware_errors,
     middleware_check_if_options,
-    middleware_p3p,
     middleware_responseTime_start,
 
     handle_DELETE_metadata_answers,
@@ -282,7 +281,6 @@ helpersInitialized.then(function(o) {
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(writeDefaultHead);
-  app.use(middleware_p3p);
   app.use(redirectIfWrongDomain);
   app.use(redirectIfApiDomain);
 
