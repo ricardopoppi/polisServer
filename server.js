@@ -360,8 +360,8 @@ const yell = errorNotifications.add;
 
 
 const intercom = new Intercom({
-  apiKey: process.env.INTERCOM_API_KEY,
-  appId: "nb5hla8s",
+  apiKey: process.env.INTERCOM_ACCESS_TOKEN,
+  appId: process.env.INTERCOM_APP_ID,
 });
 
 
